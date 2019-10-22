@@ -7,15 +7,17 @@ using UnityEngine;
 public class GenerateGraph : MonoBehaviour
 {
     // Constants
-    private const float MIN_EDGE_LEN = 0.07f;
+    private const float MIN_EDGE_LEN = 0.1f;
+
     // Unity editor set slider variables
     public int numNodes;
     private int CurrID = 0;
     private List<Node> Nodes;
     public GameObject nodeSprite;
+    public GameObject blipSprite;
     public Material material;
     private Camera cam;
-
+    private List<GameObject> edges;
 
     private Node GetNode(float xdist, float ydist)
     {
@@ -94,34 +96,35 @@ public class GenerateGraph : MonoBehaviour
     private void MatchAdjacents(int maxAdjacents)
     {
         generateNodes();
-        bool[] explored = new bool[Nodes.Count];
         Queue<Node> unvisited = new Queue<Node>();
-        unvisited.Enqueue(Nodes[0]);
+        foreach(Node n in Nodes)
+        {
+            unvisited.Enqueue(n);
+        }
         while (unvisited.Count > 0)
         {
             Node curr = unvisited.Dequeue();
             if (curr.neighbors.Count < maxAdjacents)
             {
-                IEnumerable<Node> closest = GetClosestUnvisited(explored, Nodes, maxAdjacents, curr);
+                IEnumerable<Node> closest = GetClosestUnvisited(Nodes, maxAdjacents, curr);
                 foreach (Node e in closest)
                 {
                     e.neighbors.Add(curr);
                     unvisited.Enqueue(e);
                 }
                 curr.neighbors.AddRange(closest);
-                explored[curr.Id] = true;
             }
         }
     }
 
-    private IEnumerable<Node> GetClosestUnvisited(bool[] visited, List<Node> nodes, int v, Node curr)
+    private IEnumerable<Node> GetClosestUnvisited(List<Node> nodes, int v, Node curr)
     {
         List<Node> sol = new List<Node>();
         SortedDictionary<float, Node> dict = new SortedDictionary<float, Node>();
         // Adding to the sortedDict takes log(n) time.
         foreach (Node n in Nodes)
         {
-            if (!visited[n.Id])
+            if (n.neighbors.Count < v && !n.neighbors.Contains(curr))
             {
                 dict.Add(curr.getDist(n), n);
             }
@@ -141,7 +144,7 @@ public class GenerateGraph : MonoBehaviour
 
     private void DrawGraph()
     {
-        MatchAdjacents(6);
+        MatchAdjacents(4);
         foreach (Node e in Nodes)
         {
             Vector3 vertex = new Vector3(e.x, e.y, 1);
@@ -153,8 +156,7 @@ public class GenerateGraph : MonoBehaviour
     {
         if (cam != null)
         {
-            GL.Begin(GL.LINES);
-            material.SetPass(0);
+            edges = new List<GameObject>();
             bool[] drawn = new bool[Nodes.Count];
             foreach (Node e in Nodes)
             {
@@ -163,9 +165,16 @@ public class GenerateGraph : MonoBehaviour
                 {
                     if (!drawn[n.Id])
                     {
-                        GL.Color(Color.white);
-                        GL.Vertex(cam.ViewportToWorldPoint(vertex));
-                        GL.Vertex(cam.ViewportToWorldPoint(new Vector3(n.x, n.y, 1)));
+                        GameObject empty = new GameObject();
+                        empty.AddComponent<LineRenderer>();
+                        LineRenderer lr = empty.GetComponent<LineRenderer>();
+                        lr.material = material;
+                        lr.startWidth = 0.05f;
+                        lr.endWidth = 0.05f;
+                        lr.positionCount = 2;
+                        lr.SetPosition(0, cam.ViewportToWorldPoint(new Vector3(e.x, e.y, 1)));
+                        lr.SetPosition(1, cam.ViewportToWorldPoint(new Vector3(n.x, n.y, 1)));
+                        edges.Add(empty);
                     }
                 }
                 drawn[e.Id] = true;
@@ -178,9 +187,16 @@ public class GenerateGraph : MonoBehaviour
         }
 
     }
+
+    private void GenerateBlips()
+    {
+        Node n = Nodes[0];
+        GameObject blip = Instantiate(blipSprite);
+        blip.transform.position = cam.ViewportToWorldPoint(new Vector3(n.x, n.y,1));
+    }
     private void OnEnable()
     {
-
+        
     }
 
     private void OnDisable()
@@ -194,10 +210,7 @@ public class GenerateGraph : MonoBehaviour
     {
         cam = GetComponent<Camera>();
         DrawGraph();
-        Nodes.ForEach(e => {
-            Debug.Log($"Node{e.Id}");
-            e.neighbors.ForEach(n => Debug.Log($"To Node: {n.Id}"));
-        });
+        GenerateBlips();
     }
 
     // Update is called once per frame
