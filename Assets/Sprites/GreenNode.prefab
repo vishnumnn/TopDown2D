@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &3405940528609146153
+--- !u!1001 &434981672233782815
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -10,17 +10,22 @@ PrefabInstance:
     - target: {fileID: 904406329966348498, guid: b205f3e33a2967d428dc409533cea863,
         type: 3}
       propertyPath: m_Name
-      value: GreenNode Variant
+      value: GreenNode
+      objectReference: {fileID: 0}
+    - target: {fileID: 904406329966348498, guid: b205f3e33a2967d428dc409533cea863,
+        type: 3}
+      propertyPath: m_TagString
+      value: Node
       objectReference: {fileID: 0}
     - target: {fileID: -1994275855141984162, guid: b205f3e33a2967d428dc409533cea863,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5.491
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -1994275855141984162, guid: b205f3e33a2967d428dc409533cea863,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.511
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -1994275855141984162, guid: b205f3e33a2967d428dc409533cea863,
         type: 3}
@@ -70,27 +75,12 @@ PrefabInstance:
     - target: {fileID: -1994275855141984162, guid: b205f3e33a2967d428dc409533cea863,
         type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.39475203
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: -1994275855141984162, guid: b205f3e33a2967d428dc409533cea863,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.39475203
-      objectReference: {fileID: 0}
-    - target: {fileID: -1994275855141984162, guid: b205f3e33a2967d428dc409533cea863,
-        type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.39475203
-      objectReference: {fileID: 0}
-    - target: {fileID: -2220384163540610277, guid: b205f3e33a2967d428dc409533cea863,
-        type: 3}
-      propertyPath: m_SortingLayerID
-      value: -679185751
-      objectReference: {fileID: 0}
-    - target: {fileID: -2220384163540610277, guid: b205f3e33a2967d428dc409533cea863,
-        type: 3}
-      propertyPath: m_SortingLayer
-      value: 2
+      value: 4
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 7243324766535440047, guid: b205f3e33a2967d428dc409533cea863,

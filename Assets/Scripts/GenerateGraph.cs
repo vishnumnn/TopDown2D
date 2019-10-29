@@ -18,13 +18,14 @@ public class GenerateGraph : MonoBehaviour
     public Material material;
     private Camera cam;
     private List<GameObject> edges;
-
+    private float ejectSpeed = 0.1f;
     private Node GetNode(float xdist, float ydist)
     {
         Node n = new Node();
         n.x = xdist;
         n.y = ydist;
         n.Id = CurrID;
+        n.BlipCount = 40;
         n.neighbors = new List<Node>();
         return n;
     }
@@ -152,7 +153,7 @@ public class GenerateGraph : MonoBehaviour
         }
     }
 
-    private void OnPostRender()
+    private void DrawEdges()
     {
         if (cam != null)
         {
@@ -171,6 +172,8 @@ public class GenerateGraph : MonoBehaviour
                         lr.material = material;
                         lr.startWidth = 0.05f;
                         lr.endWidth = 0.05f;
+                        lr.startColor = Color.grey;
+                        lr.endColor = Color.grey;
                         lr.positionCount = 2;
                         lr.SetPosition(0, cam.ViewportToWorldPoint(new Vector3(e.x, e.y, 1)));
                         lr.SetPosition(1, cam.ViewportToWorldPoint(new Vector3(n.x, n.y, 1)));
@@ -179,20 +182,25 @@ public class GenerateGraph : MonoBehaviour
                 }
                 drawn[e.Id] = true;
             }
-            GL.End();
         }
         else
         {
             Debug.LogError("Camera not initialized");
         }
+    }
+    private void OnPostRender()
+    {
 
     }
 
     private void GenerateBlips()
     {
-        Node n = Nodes[0];
-        GameObject blip = Instantiate(blipSprite);
-        blip.transform.position = cam.ViewportToWorldPoint(new Vector3(n.x, n.y,1));
+        foreach(Node n in Nodes)
+        {
+            Vector2 x = (new Vector2(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f))).normalized;
+            Vector3 ejectDirection = new Vector3(x.x, x.y, 1);
+            
+        }
     }
     private void OnEnable()
     {
@@ -210,6 +218,7 @@ public class GenerateGraph : MonoBehaviour
     {
         cam = GetComponent<Camera>();
         DrawGraph();
+        DrawEdges();
         GenerateBlips();
     }
 

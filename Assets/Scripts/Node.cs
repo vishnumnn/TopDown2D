@@ -12,6 +12,7 @@ namespace Assets.Scripts
         public float x;
         public float y;
         public int Id;
+        public int BlipCount;
         public List<Node> neighbors;
 
         public Node()
