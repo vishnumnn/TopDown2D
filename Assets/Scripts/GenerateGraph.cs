@@ -19,6 +19,9 @@ public class GenerateGraph : MonoBehaviour
     private Camera cam;
     private List<GameObject> edges;
     private float ejectSpeed = 0.1f;
+
+    // Others
+    private List<Blip> blipsInScene = new List<Blip>();
     private Node GetNode(float xdist, float ydist)
     {
         Node n = new Node();
@@ -192,14 +195,19 @@ public class GenerateGraph : MonoBehaviour
     {
 
     }
-
+    
     private void GenerateBlips()
     {
         foreach(Node n in Nodes)
         {
+            // Make random direction to eject node
             Vector2 x = (new Vector2(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f))).normalized;
             Vector3 ejectDirection = new Vector3(x.x, x.y, 1);
-            
+            // Create Blip
+            Blip toAdd = new Blip(Blip.State.Ejection, n.Player, ejectDirection);
+            toAdd.OriginDest[0] = n;
+
+            blipsInScene.Add(toAdd);
         }
     }
     private void OnEnable()
