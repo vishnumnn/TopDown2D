@@ -9,8 +9,7 @@ namespace Assets.Scripts
 {
     public class Node
     {
-        public float x;
-        public float y;
+        public Vector3 position;
         public int Id;
         public int BlipCount;
         public int Player;
@@ -27,7 +26,7 @@ namespace Assets.Scripts
             {
                 return Mathf.Infinity;
             }
-            return Mathf.Sqrt(Mathf.Pow(this.x - other.x, 2) + Mathf.Pow(this.y - other.y, 2));
+            return Mathf.Sqrt(Mathf.Pow(this.position.x - other.position.x, 2) + Mathf.Pow(this.position.y - other.position.y, 2));
         }
 
         public override bool Equals(System.Object o)
@@ -37,7 +36,7 @@ namespace Assets.Scripts
             Node obj = (Node)o;
             if (this.Id != obj.Id)
                 return false;
-            if (this.x != obj.x || this.y != obj.y)
+            if (this.position.x != obj.position.x || this.position.y != obj.position.y)
                 return false;
 
             return true;

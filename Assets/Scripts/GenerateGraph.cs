@@ -11,22 +11,23 @@ public class GenerateGraph : MonoBehaviour
 
     // Unity editor set slider variables
     public int numNodes;
-    private int CurrID = 0;
-    private List<Node> Nodes;
     public GameObject nodeSprite;
     public GameObject blipSprite;
     public Material material;
     private Camera cam;
-    private List<GameObject> edges;
-    private float ejectSpeed = 0.1f;
 
-    // Others
-    private List<Blip> blipsInScene = new List<Blip>();
+    // State variables
+    private int CurrID = 0;
+    private List<Node> Nodes;
+    private List<GameObject> edges;
+
+    // Object Pooling
+    private ObjectPoolContainer _cont = new ObjectPoolContainer();
+
     private Node GetNode(float xdist, float ydist)
     {
         Node n = new Node();
-        n.x = xdist;
-        n.y = ydist;
+        n.position = new Vector3(xdist, ydist, 1);
         n.Id = CurrID;
         n.BlipCount = 40;
         n.neighbors = new List<Node>();
@@ -151,8 +152,7 @@ public class GenerateGraph : MonoBehaviour
         MatchAdjacents(4);
         foreach (Node e in Nodes)
         {
-            Vector3 vertex = new Vector3(e.x, e.y, 1);
-            Instantiate(nodeSprite, cam.ViewportToWorldPoint(vertex), Quaternion.identity);
+            Instantiate(nodeSprite, cam.ViewportToWorldPoint(e.position), Quaternion.identity);
         }
     }
 
@@ -164,7 +164,7 @@ public class GenerateGraph : MonoBehaviour
             bool[] drawn = new bool[Nodes.Count];
             foreach (Node e in Nodes)
             {
-                Vector3 vertex = new Vector3(e.x, e.y, 1);
+                Vector3 vertex = e.position;
                 foreach (Node n in e.neighbors)
                 {
                     if (!drawn[n.Id])
@@ -178,8 +178,8 @@ public class GenerateGraph : MonoBehaviour
                         lr.startColor = Color.grey;
                         lr.endColor = Color.grey;
                         lr.positionCount = 2;
-                        lr.SetPosition(0, cam.ViewportToWorldPoint(new Vector3(e.x, e.y, 1)));
-                        lr.SetPosition(1, cam.ViewportToWorldPoint(new Vector3(n.x, n.y, 1)));
+                        lr.SetPosition(0, cam.ViewportToWorldPoint(e.position));
+                        lr.SetPosition(1, cam.ViewportToWorldPoint(n.position));
                         edges.Add(empty);
                     }
                 }
@@ -204,10 +204,13 @@ public class GenerateGraph : MonoBehaviour
             Vector2 x = (new Vector2(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f))).normalized;
             Vector3 ejectDirection = new Vector3(x.x, x.y, 1);
             // Create Blip
-            Blip toAdd = new Blip(Blip.State.Ejection, n.Player, ejectDirection);
-            toAdd.OriginDest[0] = n;
-
-            blipsInScene.Add(toAdd);
+            GameObject newBlip = _cont.RetrieveObjectByTag(blipSprite.tag);
+            newBlip.AddComponent<Blip>();
+            Blip blipScript = newBlip.GetComponent<Blip>();
+            blipScript.BlipState = Blip.State.Ejection;
+            blipScript.Direction = ejectDirection;
+            blipScript.OriginDest[0] = n;
+            blipScript.Player = 1;
         }
     }
     private void OnEnable()

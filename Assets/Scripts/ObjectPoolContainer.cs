@@ -59,10 +59,14 @@ public class ObjectPoolContainer : MonoBehaviour
             ObjectPools.Add(obj, pool);
         }
     }
+
+    private void OnEnable()
+    {
+    }
     // Start is called before the first frame update
     void Start()
     {
-        
+        InstantiateAllObjects();
     }
 
     // Update is called once per frame
