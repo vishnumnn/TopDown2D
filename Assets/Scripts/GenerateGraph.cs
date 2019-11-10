@@ -12,26 +12,24 @@ public class GenerateGraph : MonoBehaviour
     // Unity editor set slider variables
     public int numNodes;
     public GameObject nodeSprite;
-    public GameObject blipSprite;
     public Material material;
     private Camera cam;
 
     // State variables
     private int CurrID = 0;
-    private List<Node> Nodes;
+    private List<GameObject> Nodes;
     private List<GameObject> edges;
 
-    // Object Pooling
-    private ObjectPoolContainer _cont = new ObjectPoolContainer();
-
-    private Node GetNode(float xdist, float ydist)
+    private GameObject GetNode(float xdist, float ydist)
     {
-        Node n = new Node();
-        n.position = new Vector3(xdist, ydist, 1);
-        n.Id = CurrID;
-        n.BlipCount = 40;
-        n.neighbors = new List<Node>();
-        return n;
+        GameObject node = Instantiate(nodeSprite) as GameObject;
+        Node script = node.AddComponent<Node>();
+        script.position = new Vector3(xdist, ydist, 1);
+        node.transform.position = cam.ViewportToWorldPoint(script.position);
+        script.Id = CurrID;
+        script.currentBlips = 0;
+        script.neighbors = new List<GameObject>();
+        return node;
     }
 
     /// <summary>
@@ -69,7 +67,7 @@ public class GenerateGraph : MonoBehaviour
 
     private void generateNodes()
     {
-        List<Node> nodes = new List<Node>();
+        List<GameObject> nodes = new List<GameObject>();
         List<Tuple<float, float>> used = new List<Tuple<float, float>>();
         float min = 0.05f;
         float max = 0.95f;
@@ -101,45 +99,45 @@ public class GenerateGraph : MonoBehaviour
     private void MatchAdjacents(int maxAdjacents)
     {
         generateNodes();
-        Queue<Node> unvisited = new Queue<Node>();
-        foreach(Node n in Nodes)
+        Queue<GameObject> unvisited = new Queue<GameObject>();
+        foreach(GameObject n in Nodes)
         {
             unvisited.Enqueue(n);
         }
         while (unvisited.Count > 0)
         {
-            Node curr = unvisited.Dequeue();
-            if (curr.neighbors.Count < maxAdjacents)
+            GameObject curr = unvisited.Dequeue();
+            if (curr.GetComponent<Node>().neighbors.Count < maxAdjacents)
             {
-                IEnumerable<Node> closest = GetClosestUnvisited(Nodes, maxAdjacents, curr);
-                foreach (Node e in closest)
+                IEnumerable<GameObject> closest = GetClosestUnvisited(Nodes, maxAdjacents, curr);
+                foreach (GameObject e in closest)
                 {
-                    e.neighbors.Add(curr);
+                    e.GetComponent<Node>().neighbors.Add(curr);
                     unvisited.Enqueue(e);
                 }
-                curr.neighbors.AddRange(closest);
+                curr.GetComponent<Node>().neighbors.AddRange(closest);
             }
         }
     }
 
-    private IEnumerable<Node> GetClosestUnvisited(List<Node> nodes, int v, Node curr)
+    private IEnumerable<GameObject> GetClosestUnvisited(List<GameObject> nodes, int v, GameObject curr)
     {
-        List<Node> sol = new List<Node>();
-        SortedDictionary<float, Node> dict = new SortedDictionary<float, Node>();
+        List<GameObject> sol = new List<GameObject>();
+        SortedDictionary<float, GameObject> dict = new SortedDictionary<float, GameObject>();
         // Adding to the sortedDict takes log(n) time.
-        foreach (Node n in Nodes)
+        foreach (GameObject n in Nodes)
         {
-            if (n.neighbors.Count < v && !n.neighbors.Contains(curr))
+            if (n.GetComponent<Node>().neighbors.Count < v && !n.GetComponent<Node>().neighbors.Contains(curr))
             {
-                dict.Add(curr.getDist(n), n);
+                dict.Add(curr.GetComponent<Node>().getDist(n.GetComponent<Node>()), n);
             }
         }
-        foreach (KeyValuePair<float, Node> pair in dict)
+        foreach (KeyValuePair<float, GameObject> pair in dict)
         {
-            if (curr.neighbors.Count + sol.Count >= v)
+            if (curr.GetComponent<Node>().neighbors.Count + sol.Count >= v)
             {
                 break;
-            }else if(pair.Value.Id != curr.Id)
+            }else if(pair.Value.GetComponent<Node>().Id != curr.GetComponent<Node>().Id)
             {
                 sol.Add(pair.Value);
             }
@@ -150,10 +148,6 @@ public class GenerateGraph : MonoBehaviour
     private void DrawGraph()
     {
         MatchAdjacents(4);
-        foreach (Node e in Nodes)
-        {
-            Instantiate(nodeSprite, cam.ViewportToWorldPoint(e.position), Quaternion.identity);
-        }
     }
 
     private void DrawEdges()
@@ -162,12 +156,12 @@ public class GenerateGraph : MonoBehaviour
         {
             edges = new List<GameObject>();
             bool[] drawn = new bool[Nodes.Count];
-            foreach (Node e in Nodes)
+            foreach (GameObject e in Nodes)
             {
-                Vector3 vertex = e.position;
-                foreach (Node n in e.neighbors)
+                Vector3 vertex = e.GetComponent<Node>().position;
+                foreach (GameObject n in e.GetComponent<Node>().neighbors)
                 {
-                    if (!drawn[n.Id])
+                    if (!drawn[n.GetComponent<Node>().Id])
                     {
                         GameObject empty = new GameObject();
                         empty.AddComponent<LineRenderer>();
@@ -178,12 +172,12 @@ public class GenerateGraph : MonoBehaviour
                         lr.startColor = Color.grey;
                         lr.endColor = Color.grey;
                         lr.positionCount = 2;
-                        lr.SetPosition(0, cam.ViewportToWorldPoint(e.position));
-                        lr.SetPosition(1, cam.ViewportToWorldPoint(n.position));
+                        lr.SetPosition(0, cam.ViewportToWorldPoint(e.GetComponent<Node>().position));
+                        lr.SetPosition(1, cam.ViewportToWorldPoint(n.GetComponent<Node>().position));
                         edges.Add(empty);
                     }
                 }
-                drawn[e.Id] = true;
+                drawn[e.GetComponent<Node>().Id] = true;
             }
         }
         else
@@ -196,23 +190,6 @@ public class GenerateGraph : MonoBehaviour
 
     }
     
-    private void GenerateBlips()
-    {
-        foreach(Node n in Nodes)
-        {
-            // Make random direction to eject node
-            Vector2 x = (new Vector2(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f))).normalized;
-            Vector3 ejectDirection = new Vector3(x.x, x.y, 1);
-            // Create Blip
-            GameObject newBlip = _cont.RetrieveObjectByTag(blipSprite.tag);
-            newBlip.AddComponent<Blip>();
-            Blip blipScript = newBlip.GetComponent<Blip>();
-            blipScript.BlipState = Blip.State.Ejection;
-            blipScript.Direction = ejectDirection;
-            blipScript.OriginDest[0] = n;
-            blipScript.Player = 1;
-        }
-    }
     private void OnEnable()
     {
         
@@ -230,7 +207,6 @@ public class GenerateGraph : MonoBehaviour
         cam = GetComponent<Camera>();
         DrawGraph();
         DrawEdges();
-        GenerateBlips();
     }
 
     // Update is called once per frame

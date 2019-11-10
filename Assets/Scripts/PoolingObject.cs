@@ -23,5 +23,10 @@ namespace Assets.Scripts
             }
             return false;
         }
+
+        public override string ToString()
+        {
+            return $"Pooling Object: {objectToPool.tag} Pool Size: {poolSize}";
+        }
     }
 }

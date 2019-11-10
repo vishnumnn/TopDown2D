@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,18 +8,19 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
-    public class Node
+    public class Node : MonoBehaviour
     {
+        // Properties
         public Vector3 position;
         public int Id;
-        public int BlipCount;
+        public int currentBlips;
         public int Player;
-        public List<Node> neighbors;
-
-        public Node()
-        {
-
-        }
+        public List<GameObject> neighbors;
+        
+        // Blip generation cooldown
+        private float cooldown = 3.0f;
+        // Ability to generate blips
+        private bool canGenerateBlips = true;
 
         public float getDist(Node other)
         {
@@ -41,5 +43,52 @@ namespace Assets.Scripts
 
             return true;
         }
+
+        private void SpawnBlip()
+        {
+            // Make random direction to eject node
+            Vector2 x = (new Vector2(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f))).normalized;
+            Vector3 ejectDirection = new Vector3(x.x, x.y, 1);
+
+            // Create Blip
+            GameObject newBlip = ObjectPoolContainer.sharedInstance.RetrieveObjectByTag("GreenBlip");
+            if(newBlip != null)
+            {
+                newBlip.AddComponent<Blip>();
+                Blip blipScript = newBlip.GetComponent<Blip>();
+                blipScript.BlipState = Blip.State.Ejection;
+                blipScript.Direction = ejectDirection;
+                blipScript.OriginDest[0] = this.gameObject;
+                blipScript.Player = 1;
+                currentBlips++;
+            }
+            else
+            {
+                canGenerateBlips = false;
+            }
+        }
+
+        IEnumerator BlipDispatcher()
+        {
+            while (canGenerateBlips)
+            {
+                yield return new WaitForSeconds(cooldown);
+                SpawnBlip();
+            }
+        }
+        private void Start()
+        {
+            StartCoroutine(BlipDispatcher());
+        }
+
+        private void Update()
+        {
+        }
+
+        private void OnEnable()
+        {
+            
+        }
+
     }
 }
