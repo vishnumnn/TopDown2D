@@ -54,11 +54,14 @@ namespace Assets.Scripts
             GameObject newBlip = ObjectPoolContainer.sharedInstance.RetrieveObjectByTag("GreenBlip");
             if(newBlip != null)
             {
+
+                newBlip.transform.position = gameObject.transform.position;
                 newBlip.AddComponent<Blip>();
                 Blip blipScript = newBlip.GetComponent<Blip>();
                 blipScript.BlipState = Blip.State.Ejection;
                 blipScript.Direction = ejectDirection;
-                blipScript.OriginDest[0] = this.gameObject;
+                blipScript.OriginDest = new GameObject[2];
+                blipScript.OriginDest[0] = gameObject;
                 blipScript.Player = 1;
                 currentBlips++;
             }

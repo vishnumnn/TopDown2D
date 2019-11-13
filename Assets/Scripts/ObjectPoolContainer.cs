@@ -18,11 +18,8 @@ public class ObjectPoolContainer : MonoBehaviour
     private Dictionary<PoolingObject, List<GameObject>> ObjectPools { get; set; }
     public GameObject RetrieveObjectByTag(string tag)
     {
-        Debug.Log(ObjectPools.Keys.GetEnumerator().MoveNext());
         foreach (PoolingObject obj in ObjectPools.Keys)
         {
-            Debug.Log("Here");
-            Debug.Log(obj.ToString());
             if (obj.objectToPool.tag.Equals(tag))
             {
                 List<GameObject> pool = null;

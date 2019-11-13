@@ -13,8 +13,8 @@ public class Blip : MonoBehaviour
     }
     // Blip State specifics
     // Ejection
-    const float EJECT_SPEED = 1f;
-    const float MAX_DIST = 20f;
+    const float MAX_EJECT_DIST = 0.5f;
+    const float EJECT_SPEED = MAX_EJECT_DIST/2;
     private float distTraveled = 0.0f;
 
     // Blip characteristics
@@ -22,14 +22,6 @@ public class Blip : MonoBehaviour
     public int Player;
     public GameObject[] OriginDest;
     public Vector3 Direction;
- 
-    public Blip(State state, int player, Vector3 direction)
-    {
-        BlipState = state;
-        Player = player;
-        Direction = direction;
-        OriginDest = new GameObject[2];
-    }
 
     // Start is called before the first frame update
     void Start()
@@ -39,16 +31,15 @@ public class Blip : MonoBehaviour
 
     // Update is called once per frame
     void Update()
-    {
-        // rotation to direction
-        float angle = Mathf.Atan2(Direction.y, Direction.x) * Mathf.Rad2Deg;
-        this.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+    {   // rotation to direction
 
         if(BlipState == State.Ejection)
         {
-            while(distTraveled < MAX_DIST)
+            float angle = Mathf.Atan2(Direction.y, Direction.x) * Mathf.Rad2Deg;
+            gameObject.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+            if(distTraveled <= MAX_EJECT_DIST)
             {
-                this.transform.Translate(EJECT_SPEED * Time.deltaTime * Direction);
+                transform.Translate(Direction.x * EJECT_SPEED * Time.deltaTime, Direction.y * EJECT_SPEED * Time.deltaTime, 0);
                 distTraveled += EJECT_SPEED * Time.deltaTime;
             }
         }

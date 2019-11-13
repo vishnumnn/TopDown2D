@@ -7,7 +7,7 @@ using UnityEngine;
 public class GenerateGraph : MonoBehaviour
 {
     // Constants
-    private const float MIN_EDGE_LEN = 0.1f;
+    private const float MIN_EDGE_LEN = 0.25f;
 
     // Unity editor set slider variables
     public int numNodes;
