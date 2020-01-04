@@ -18,7 +18,7 @@ namespace Assets.Scripts
         public List<GameObject> neighbors;
         
         // Blip generation cooldown
-        private float cooldown = 3.0f;
+        private float cooldown = 1.0f;
         // Ability to generate blips
         private bool canGenerateBlips = true;
 
