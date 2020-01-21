@@ -14,14 +14,24 @@ public class Blip : MonoBehaviour
     // Blip State specifics
     const float MAX_EJECT_DIST = 0.5f;
     const float EJECT_SPEED = MAX_EJECT_DIST/2;
-    const float ORBIT_RADIUS = 0.6f;
+    const float TRANSIT_SPEED = EJECT_SPEED * 3;
+    const float ORBIT_RADIUS = 0.7f;
     private float distTraveled = 0.0f;
 
     // Blip characteristics
     public State BlipState;
     public int Player;
     public GameObject[] OriginDest;
-    public Vector3 Direction;
+
+    // On select sprite
+    private Sprite selectSprite;
+    private Sprite normalSprite;
+
+    private void Awake()
+    {
+        selectSprite = Resources.Load<Sprite>("Sprites/GreenBlipSelected");
+        normalSprite = Resources.Load<Sprite>("Sprites/GreenBlip");
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -32,32 +42,42 @@ public class Blip : MonoBehaviour
     // Update is called once per frame
     void Update()
     {   // rotation to direction
-
+        Debug.Log(BlipState);
         switch (BlipState)
         {
             case State.Ejection:
                 
-                transform.rotation = rotate(Direction);
                 if (distTraveled <= MAX_EJECT_DIST)
                 {
-                    distTraveled += translate(EJECT_SPEED, Direction);
+                    distTraveled += translate(EJECT_SPEED, transform.up);
                 }
                 else
                 {
                     BlipState = State.Idle;
+                    distTraveled = 0;
                 }
                 break;
             case State.Idle:
                 Vector3 origin = OriginDest[0].transform.position;
-                if(Vector3.Distance(origin, transform.position) >= ORBIT_RADIUS)
+                
+                if (Vector3.Distance(origin, transform.position) <= ORBIT_RADIUS)
                 {
-                    Direction = rotateByAngle(100.0f) * Direction;
-                    transform.rotation = rotate(Direction);
+                    transform.RotateAround(origin, Vector3.forward, 20 * Time.deltaTime);
                 }
-                translate(ORBIT_RADIUS, Direction);
                 break;
             case State.Transit:
-
+                if(Vector3.Magnitude(transform.position - OriginDest[1].transform.position) > MAX_EJECT_DIST) 
+                {
+                    Debug.Log("Transit");
+                    translate(TRANSIT_SPEED, transform.up);
+                }
+                else
+                {
+                    OriginDest[0] = OriginDest[1];
+                    OriginDest[1] = null;
+                    BlipState = State.Idle;
+                }
+                break;
             case State.Attack:
 
             default:
@@ -67,18 +87,33 @@ public class Blip : MonoBehaviour
 
     private float translate(float speed, Vector3 dir)
     {
-        transform.Translate(dir.x * speed * Time.deltaTime, dir.y * speed * Time.deltaTime, 0);
+        dir = dir.normalized;
+        transform.Translate(dir.x * speed * Time.deltaTime, dir.y * speed * Time.deltaTime, 0, Space.World);
         return speed * Time.deltaTime;
+    }
+
+    public bool ChangeSprite(bool selected)
+    {
+        Debug.Log("Tried to change sprite");
+        if (selected)
+        {
+            gameObject.GetComponent<SpriteRenderer>().sprite = selectSprite;
+        }
+        else
+        {
+            gameObject.GetComponent<SpriteRenderer>().sprite = normalSprite;
+        }
+        return selected;
+    }
+
+    public override string ToString()
+    {
+        return $"{transform.up.ToString()}";
     }
 
     private Quaternion rotate(Vector3 dir)
     {
-        float angle = Mathf.Atan2(Direction.y, Direction.x) * Mathf.Rad2Deg;
-        return Quaternion.AngleAxis(angle, Vector3.forward);
-    }
-
-    private Quaternion rotateByAngle(float angle)
-    {
-        return Quaternion.AngleAxis(angle, Vector3.forward); 
+        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+        return Quaternion.AngleAxis(angle , Vector3.forward);
     }
 }

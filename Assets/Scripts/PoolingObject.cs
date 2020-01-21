@@ -10,7 +10,8 @@ namespace Assets.Scripts
     [Serializable]
     public class PoolingObject
     {
-        public int poolSize;
+        [Range(2, 6000)]
+        public int poolSize = 60;
         public GameObject objectToPool;
         public bool expandable;
 

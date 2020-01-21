@@ -14,7 +14,8 @@ public class ObjectPoolContainer : MonoBehaviour
     /// Publicly exposed enumerable that allows for variable numbers of distinct prefabs to be pooled. The alternative to this would be to 
     /// hard code the different prefabs into the dictionary object within the InstantiateAllObjects method, which is not adaptable.
     /// </summary>
-    public List<PoolingObject> prefabs;
+    [SerializeField]
+    private List<PoolingObject> prefabs;
     private Dictionary<PoolingObject, List<GameObject>> ObjectPools { get; set; }
     public GameObject RetrieveObjectByTag(string tag)
     {
@@ -43,12 +44,25 @@ public class ObjectPoolContainer : MonoBehaviour
                 {
                     Debug.Log("Have activated all available gameObjects of this tag");
                 }
+                break;
             }
         }
         return null;
     }
-
-    private void InstantiateAllObjects()
+    public List<GameObject> GetAllObjectsOfTag(string tag)
+    {
+        foreach(PoolingObject obj in ObjectPools.Keys)
+        {
+            if (obj.objectToPool.tag.Equals(tag))
+            {
+                List<GameObject> list;
+                ObjectPools.TryGetValue(obj, out list);
+                return list;
+            }
+        }
+        return null;
+    }
+    public void InstantiateAllObjects()
     {
         ObjectPools = new Dictionary<PoolingObject, List<GameObject>>();
         foreach(PoolingObject obj in prefabs)
@@ -67,16 +81,18 @@ public class ObjectPoolContainer : MonoBehaviour
 
     private void OnEnable()
     {
+        
     }
 
     private void Awake()
     {
         sharedInstance = this;
+        InstantiateAllObjects();
     }
     // Start is called before the first frame update
     void Start()
     {
-        InstantiateAllObjects();
+        
     }
 
     // Update is called once per frame

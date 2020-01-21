@@ -47,19 +47,17 @@ namespace Assets.Scripts
         private void SpawnBlip()
         {
             // Make random direction to eject node
-            Vector2 x = (new Vector2(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f))).normalized;
-            Vector3 ejectDirection = new Vector3(x.x, x.y, 1);
+            Vector3 eject = new Vector3(1 / Mathf.Sqrt(2), 1 / Mathf.Sqrt(2), 0);//neighbors[0].transform.position - transform.position;
 
             // Create Blip
             GameObject newBlip = ObjectPoolContainer.sharedInstance.RetrieveObjectByTag("GreenBlip");
             if(newBlip != null)
             {
-
                 newBlip.transform.position = gameObject.transform.position;
                 newBlip.AddComponent<Blip>();
                 Blip blipScript = newBlip.GetComponent<Blip>();
                 blipScript.BlipState = Blip.State.Ejection;
-                blipScript.Direction = ejectDirection;
+                newBlip.transform.rotation = Quaternion.LookRotation(Vector3.forward, eject);
                 blipScript.OriginDest = new GameObject[2];
                 blipScript.OriginDest[0] = gameObject;
                 blipScript.Player = 1;
@@ -92,6 +90,7 @@ namespace Assets.Scripts
         {
             
         }
+
 
     }
 }
