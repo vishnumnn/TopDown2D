@@ -11,6 +11,9 @@ public class Blip : MonoBehaviour
         Transit = 3,
         Idle = 4
     }
+
+    // Screen Partioning
+
     // Blip State specifics
     const float MAX_EJECT_DIST = 0.5f;
     const float EJECT_SPEED = MAX_EJECT_DIST/2;
@@ -42,14 +45,13 @@ public class Blip : MonoBehaviour
     // Update is called once per frame
     void Update()
     {   // rotation to direction
-        Debug.Log(BlipState);
         switch (BlipState)
         {
             case State.Ejection:
                 
                 if (distTraveled <= MAX_EJECT_DIST)
                 {
-                    distTraveled += translate(EJECT_SPEED, transform.up);
+                    distTraveled += Translate(EJECT_SPEED, transform.up);
                 }
                 else
                 {
@@ -68,8 +70,7 @@ public class Blip : MonoBehaviour
             case State.Transit:
                 if(Vector3.Magnitude(transform.position - OriginDest[1].transform.position) > MAX_EJECT_DIST) 
                 {
-                    Debug.Log("Transit");
-                    translate(TRANSIT_SPEED, transform.up);
+                    Translate(TRANSIT_SPEED, transform.up);
                 }
                 else
                 {
@@ -85,10 +86,11 @@ public class Blip : MonoBehaviour
         }
     }
 
-    private float translate(float speed, Vector3 dir)
+    private float Translate(float speed, Vector3 dir)
     {
         dir = dir.normalized;
         transform.Translate(dir.x * speed * Time.deltaTime, dir.y * speed * Time.deltaTime, 0, Space.World);
+
         return speed * Time.deltaTime;
     }
 
@@ -111,9 +113,18 @@ public class Blip : MonoBehaviour
         return $"{transform.up.ToString()}";
     }
 
-    private Quaternion rotate(Vector3 dir)
+    private void AdjustOnProximity()
     {
-        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-        return Quaternion.AngleAxis(angle , Vector3.forward);
+        Selector.Selected.ForEach(e => {
+            if (!gameObject.Equals(e))
+            {
+                if (Vector3.Distance(e.transform.position, transform.position) < 0.1f)
+                {
+                    Vector3 dir = e.transform.position - transform.position;
+                    dir = Quaternion.LookRotation(Vector3.forward, Vector3.down) * dir;
+                }
+            }
+        });
     }
+
 }
